@@ -25,14 +25,17 @@ export default function CricketScoringApp() {
   const [runs, setRuns] = useState<number | undefined>(undefined)
 
   useEffect(() => {
-    socket?.on("commentaryUpdate", (data: Commentary) => {
-      setCommentary((prev) => [data, ...prev])
+    socket?.on("commentaryUpdate", (data) => {
+      const commentaryData:Commentary = JSON.parse(data)
+      console.log("commentary data ",commentaryData)
+      setCommentary((prev) => [commentaryData, ...prev])
     })
 
-    socket?.on("matchUpdate", (data: Match) => {
-      setMatches((prev) => prev.map((match) => (match.matchId === data.matchId ? data : match)))
-      if (selectedMatch?.matchId === data.matchId) {
-        setSelectedMatch(data)
+    socket?.on("matchUpdate", (data) => {
+      const parsedData:Match = JSON.parse(data)
+      setMatches((prev) => prev.map((match) => (match.matchId === parsedData.matchId ? parsedData : match)))
+      if (selectedMatch?.matchId === parsedData.matchId) {
+        setSelectedMatch(parsedData)
       }
     })
 
@@ -53,12 +56,14 @@ export default function CricketScoringApp() {
     }
   }
 
+  console.log("socket is ", socket)
   const loadCommentary = async (matchId: string) => {
     try {
       console.log("matchId ",matchId)
       setCommentaryLoading(true)
       const response = await fetch(`/api/matches/${matchId}/commentry`)
       const data = await response.json()
+      console.log('loadcommentary data ', data)
       setCommentary(data)
       setCommentaryLoading(false)
     } catch (error) {
@@ -104,7 +109,19 @@ export default function CricketScoringApp() {
           runs,
         }),
       })
-      const newCommentary = await response.json()
+
+      const newCommentary:Commentary = await response.json()
+      console.log("new Commentary ", newCommentary)
+      socket?.emit("commentaryUpdate", JSON.stringify({
+          over,
+          ball,
+          eventType,
+          description,
+          runs,
+          createdAt : newCommentary.createdAt,
+          matchId : newCommentary.matchId,
+          _id : newCommentary._id
+        }))
       setCommentary((prev) => [newCommentary, ...prev])
       setDescription("")
       setRuns(undefined)

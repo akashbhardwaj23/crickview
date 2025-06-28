@@ -16,13 +16,13 @@ const io = new socket_io_1.Server(httpServer, {
 });
 io.on('connection', (socket) => {
     console.log("Client connected:", socket.id);
-    socket.on('commentary', (msg) => {
-        console.log(msg);
+    socket.on('commentaryUpdate', (msg) => {
+        socket.broadcast.emit('commentaryUpdate', msg);
     });
     socket.on("disconnect", () => {
         console.log("Client disconnected:", socket.id);
     });
 });
-app.listen(8080, () => {
+httpServer.listen(8080, () => {
     console.log('Server Listening on Port 8080');
 });

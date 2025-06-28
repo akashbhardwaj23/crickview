@@ -9,11 +9,10 @@ export function useSocket(){
     useEffect(() => {
        if(!socket){
         console.log('again again ', WS_URL)
-    const newSocket = io({
-            path: WS_URL,
-            })
-       setSocket(newSocket)
+        const newSocket = io(WS_URL)
+        setSocket(newSocket)
        }
+
  
     }, [])
 

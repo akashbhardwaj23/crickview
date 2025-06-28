@@ -12,7 +12,7 @@ interface Commentary {
   matchId: string
   over: number
   ball: number
-  eventType: string // run, wicket, wide, etc. as per PDF
+  eventType: string
   description?: string
   runs?: number
   createdAt: string
