@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "build" : "tsc -b",
-    "dev" : "node dist/index.js",
-    "start" : "npm run build && npm run dev"
+    "build": "tsc -b",
+    "dev": "node dist/index.js",
+    "start": "npm run build && npm run dev"
   },
   "keywords": [],
   "author": "",
@@ -13,6 +13,7 @@
   "description": "",
   "dependencies": {
     "@types/express": "^5.0.3",
+    "dotenv": "^17.0.0",
     "expres": "^0.0.5",
     "express": "^5.1.0",
     "socket.io": "^4.8.1",

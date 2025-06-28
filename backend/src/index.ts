@@ -1,8 +1,12 @@
 import {createServer} from "http"
 import { Server } from "socket.io"
+import dotenv from  "dotenv"
 import express from "express"
 
 const app = express()
+
+dotenv.config()
+
 
 const httpServer = createServer(app)
 const io = new Server(httpServer, {
@@ -19,12 +23,20 @@ io.on('connection', (socket) => {
         socket.broadcast.emit('commentaryUpdate', msg)
     })
 
+
+    socket.on('matchUpdate', (msg) => {
+        socket.broadcast.emit('matchUpdate', msg)
+    })
+
     socket.on("disconnect", () => {
     console.log("Client disconnected:", socket.id)
     })
 })
 
 
-httpServer.listen(8080, () => {
-    console.log('Server Listening on Port 8080')
+const port = process.env.PORT || 8080
+
+
+httpServer.listen(port, () => {
+    console.log(`Server Listening on Port ${port}`)
 })
