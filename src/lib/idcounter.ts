@@ -11,6 +11,5 @@ export async function getNextMatchId(): Promise<number> {
       returnDocument: "after",
     },
   )
-
   return result?.value?.sequence || 1
 }
