@@ -20,8 +20,9 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
       )
 
       if(!result){
-        return NextResponse.json({error : "Not Found"}, {status : 403});
+        return NextResponse.json({ error: "Result not found" }, { status: 403 })
       }
+
     if (!result.value) {
       return NextResponse.json({ error: "Match not found" }, { status: 404 })
     }
