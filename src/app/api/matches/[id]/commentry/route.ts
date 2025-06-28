@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { connectToDatabase } from "@/lib/mongodb"
 import { getRedisClient } from "@/lib/redis"
-import { io } from "../../../socket/route"
+import { io } from "../../../socket/io/route"
 
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
@@ -18,7 +18,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const { over, ball, eventType, description, runs } = await request.json()
-
+    // Validate required fields
     if (!over || !ball || !eventType) {
       return NextResponse.json({ error: "over, ball, and eventType are required fields" }, { status: 400 })
     }
@@ -38,18 +38,21 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     const result = await db.collection("commentary").insertOne(commentary)
     const createdCommentary = { ...commentary, _id: result.insertedId }
 
-    // store the commentry cache 
+    // Cache the commentary in Redis
     try {
       const redis = await getRedisClient()
       const cacheKey = `commentary:${params.id}`
-   // lpush make sures that data is pushed to left side of the queue
+
+      // Push the new commentary to the Redis list
       await redis.lpush(cacheKey, JSON.stringify(createdCommentary))
 
+      // Keep only latest 10 entries
       await redis.ltrim(cacheKey, 0, 9)
 
       await redis.expire(cacheKey, 86400)
     } catch (redisError) {
       console.error("Redis caching error:", redisError)
+      // Continue without caching if Redis fails
     }
 
     if (io) {
