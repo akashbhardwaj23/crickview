@@ -1,0 +1,6 @@
+
+
+
+class UserManager {
+    socketUserMapping
+}
