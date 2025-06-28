@@ -11,6 +11,8 @@
   align-items: center;
   justify-items: center;
   min-height: 100svh;
+  max-width: 72rem;
+  margin: 0px auto;
   padding: 80px;
   gap: 64px;
   font-family: var(--font-geist-sans);
@@ -32,6 +34,10 @@
   flex-direction: column;
   gap: 32px;
   grid-row-start: 2;
+}
+
+.header {
+  margin-bottom: 64px;
 }
 
 
