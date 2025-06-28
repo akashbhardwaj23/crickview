@@ -3,11 +3,15 @@ import { connectToDatabase } from "@/lib/mongodb"
 import { getRedisClient } from "@/lib/redis"
 import { io } from "../../../socket/io/route"
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const id = (await params).id
+    console.log("above db")
     const { db } = await connectToDatabase()
-    const commentary = await db.collection("commentary").find({ matchId: params.id }).sort({ createdAt: -1 }).toArray()
+    console.log("below db")
+    const commentary = await db.collection("commentary").find({ matchId: id }).sort({ createdAt: -1 }).toArray()
 
+    console.log("commentary ", commentary)
     return NextResponse.json(commentary)
   } catch (error) {
     console.error("Error fetching commentary:", error)
@@ -15,8 +19,9 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const id = (await params).id
     const { over, ball, eventType, description, runs } = await request.json()
     // Validate required fields
     if (!over || !ball || !eventType) {
@@ -26,7 +31,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     const { db } = await connectToDatabase()
 
     const commentary = {
-      matchId: params.id,
+      matchId: id,
       over: Number(over),
       ball: Number(ball),
       eventType,
@@ -41,18 +46,16 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     // Cache the commentary in Redis
     try {
       const redis = await getRedisClient()
-      const cacheKey = `commentary:${params.id}`
+      const cacheKey = `commentary:${id}`
 
-      // Push the new commentary to the Redis list
       await redis.lpush(cacheKey, JSON.stringify(createdCommentary))
 
-      // Keep only latest 10 entries
       await redis.ltrim(cacheKey, 0, 9)
 
       await redis.expire(cacheKey, 86400)
     } catch (redisError) {
+      console.log("Redis caching error")
       console.error("Redis caching error:", redisError)
-      // Continue without caching if Redis fails
     }
 
     if (io) {

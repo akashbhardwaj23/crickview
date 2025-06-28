@@ -9,6 +9,8 @@ export async function getRedisClient(): Promise<Redis> {
     return cachedRedis
   }
 
+  console.log("Redis url ", REDIS_URL)
+
   const redis = new Redis(REDIS_URL)
   cachedRedis = redis
 

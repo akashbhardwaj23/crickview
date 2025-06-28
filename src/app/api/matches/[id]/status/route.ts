@@ -1,8 +1,9 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { connectToDatabase } from "@/lib/mongodb"
 
-export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const id = (await params).id;
     const { status } = await request.json()
 
     if (!status || !["active", "paused", "completed"].includes(status)) {
@@ -14,20 +15,18 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
     const result = await db
       .collection("matches")
       .findOneAndUpdate(
-        { matchId: params.id },
+        { matchId: id },
         { $set: { status, updatedAt: new Date().toISOString() } },
         { returnDocument: "after" },
       )
 
       if(!result){
-        return NextResponse.json({ error: "Result not found" }, { status: 403 })
+        return NextResponse.json({ error: "Result not found" }, { status: 404 })
       }
 
-    if (!result.value) {
-      return NextResponse.json({ error: "Match not found" }, { status: 404 })
-    }
+      console.log("result is ", result)
 
-    return NextResponse.json(result.value)
+    return NextResponse.json(result)
   } catch (error) {
     console.error("Error updating match status:", error)
     return NextResponse.json({ error: "Failed to update match status" }, { status: 500 })

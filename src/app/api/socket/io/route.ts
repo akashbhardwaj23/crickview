@@ -12,7 +12,7 @@ let io: ServerIO
 
 export async function GET(req: NextRequest) {
   if (!io) {
-    const httpServer: NetServer = (req as any).socket.server
+    const httpServer: NetServer = (req as any).server
     io = new ServerIO(httpServer, {
       path: "/api/socket/io",
       addTrailingSlash: false,
